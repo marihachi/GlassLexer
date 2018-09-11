@@ -36,7 +36,7 @@ namespace GlassLexer
 				this.IsNextToken = false;
 				this.CurrentToken = null;
 
-				this.LoopInitialize();
+				this.Initialize();
 
 				while (!this.Scanner.IsEnd && !this.IsNextToken) // loop
 				{
@@ -55,7 +55,7 @@ namespace GlassLexer
 
 		private bool IsComment = false;
 
-		private void LoopInitialize()
+		private void Initialize()
 		{
 			this.IsComment = false;
 		}
@@ -77,95 +77,6 @@ namespace GlassLexer
 				else
 				{
 					this.Scanner.Increment();
-				}
-			}
-
-			// state: new token
-			else if (this.CurrentToken == null)
-			{
-				// noop
-				if (this.Scanner.CurrentChar == ' ' || this.Scanner.CurrentChar == '\t')
-				{
-					this.Scanner.Increment();
-				}
-
-				// noop (length 2)
-				else if (this.Scanner.Match(TokenConstant.CRLF))
-				{
-					this.Scanner.Increment(2);
-				}
-
-				// begin string literal (")
-				else if (this.Scanner.CurrentChar == TokenConstant.StringLiteralMarkChar)
-				{
-					this.CurrentToken = new StringLiteral(new ValueContent());
-					this.Scanner.Increment();
-				}
-
-				// begin comment (/*)
-				else if (this.Scanner.Match(TokenConstant.CommentBegin))
-				{
-					this.IsComment = true;
-					this.Scanner.Increment(2);
-				}
-
-				// keyword: var
-				else if (this.Scanner.Match(TokenConstant.KeywordVar))
-				{
-					var token = new KeywordToken(new ValueContent());
-					token.Content.AddString(TokenConstant.KeywordVar);
-					this.CurrentToken = token;
-
-					this.Scanner.Increment(3);
-					this.NextToken();
-				}
-
-				// equal op (==)
-				else if (this.Scanner.Match(TokenConstant.EqualOp))
-				{
-					this.CurrentToken = new EqualOp();
-
-					this.Scanner.Increment(2);
-					this.NextToken();
-				}
-
-				// assign op (=)
-				else if (this.Scanner.CurrentChar == TokenConstant.AssignOpChar)
-				{
-					this.CurrentToken = new AssignOp();
-
-					this.Scanner.Increment();
-					this.NextToken();
-				}
-
-				// (;)
-				else if (this.Scanner.CurrentChar == TokenConstant.SemicolonChar)
-				{
-					this.CurrentToken = new Semicolon();
-
-					this.Scanner.Increment();
-					this.NextToken();
-				}
-
-				// identifier
-				else if (this.Scanner.CurrentChar >= 'a' && this.Scanner.CurrentChar <= 'z' ||
-					this.Scanner.CurrentChar >= 'A' && this.Scanner.CurrentChar <= 'Z' || this.Scanner.CurrentChar == '_')
-				{
-					this.CurrentToken = new IdentifierToken(new ValueContent());
-				}
-
-				// number
-				else if (this.Scanner.CurrentChar >= '0' && this.Scanner.CurrentChar <= '9')
-				{
-					// TODO
-
-					this.Scanner.Increment();
-				}
-
-				// unknown
-				else
-				{
-					Console.WriteLine("unknown char: " + this.Scanner.Read());
 				}
 			}
 
@@ -209,6 +120,96 @@ namespace GlassLexer
 					this.Scanner.Increment();
 					this.NextToken();
 				}
+			}
+
+			// state: new token
+			else if (this.CurrentToken == null)
+			{
+				// noop
+				if (
+					this.Scanner.CurrentChar == ' ' || this.Scanner.CurrentChar == '\t' ||
+					this.Scanner.CurrentChar == '\r' || this.Scanner.CurrentChar == '\n')
+				{
+					this.Scanner.Increment();
+				}
+
+				// begin string literal (")
+				else if (this.Scanner.CurrentChar == TokenConstant.StringLiteralMarkChar)
+				{
+					this.CurrentToken = new StringLiteral(new ValueContent());
+					this.Scanner.Increment();
+				}
+
+				// begin comment (/*)
+				else if (this.Scanner.Match(TokenConstant.CommentBegin))
+				{
+					this.IsComment = true;
+					this.Scanner.Increment(2);
+				}
+
+				// keyword: var
+				else if (this.Scanner.Match(TokenConstant.KeywordVar))
+				{
+					var token = new Token(Token.TokenType.VarKeyword);
+					this.CurrentToken = token;
+
+					this.Scanner.Increment(3);
+					this.NextToken();
+				}
+
+				// equal op (==)
+				else if (this.Scanner.Match(TokenConstant.EqualOp))
+				{
+					this.CurrentToken = new Token(Token.TokenType.EqualOp);
+
+					this.Scanner.Increment(2);
+					this.NextToken();
+				}
+
+				// assign op (=)
+				else if (this.Scanner.CurrentChar == TokenConstant.AssignOpChar)
+				{
+					this.CurrentToken = new Token(Token.TokenType.AssignOp);
+
+					this.Scanner.Increment();
+					this.NextToken();
+				}
+
+				// semicolon (;)
+				else if (this.Scanner.CurrentChar == TokenConstant.SemicolonChar)
+				{
+					this.CurrentToken = new Token(Token.TokenType.Semicolon);
+
+					this.Scanner.Increment();
+					this.NextToken();
+				}
+
+				// identifier
+				else if (this.Scanner.CurrentChar >= 'a' && this.Scanner.CurrentChar <= 'z' ||
+					this.Scanner.CurrentChar >= 'A' && this.Scanner.CurrentChar <= 'Z' || this.Scanner.CurrentChar == '_')
+				{
+					this.CurrentToken = new IdentifierToken(new ValueContent());
+				}
+
+				// number
+				else if (this.Scanner.CurrentChar >= '0' && this.Scanner.CurrentChar <= '9')
+				{
+					// TODO
+
+					this.Scanner.Increment();
+				}
+
+				// unknown
+				else
+				{
+					Console.WriteLine("unknown char: " + this.Scanner.Read());
+				}
+			}
+
+			// state: unknown
+			else
+			{
+				Console.WriteLine("unknown token: " + this.CurrentToken.Type);
 			}
 		}
 	}

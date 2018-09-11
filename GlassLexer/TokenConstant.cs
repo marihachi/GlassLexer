@@ -5,7 +5,6 @@
 		public const string KeywordVar = "var";
 		public const string CommentBegin = "/*";
 		public const string CommentEnd = "*/";
-		public const string CRLF = "\r\n";
 		public const string EqualOp = "==";
 
 		public const char AssignOpChar = '=';

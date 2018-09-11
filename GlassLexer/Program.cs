@@ -19,16 +19,32 @@ namespace GlassLexer
 			var tokenizer = new Tokenizer();
 			var tokens = tokenizer.Tokenize(code);
 
+			Console.WriteLine("# tokenize result");
+
 			// display
-			foreach(var token in tokens)
+			foreach (var token in tokens)
 			{
 				Console.Write(token.Type);
 
-				if (token is IValueToken)
+				if (token is ValueToken)
 					Console.Write($" : \"{(token as ValueToken).Content.Value}\"");
+				else if (token is ArithmeticOp)
+					Console.Write($" : {(token as ArithmeticOp).Op}");
 
 				Console.WriteLine();
 			}
+
+			// define
+			var stringLiteral = new Syntax();
+			stringLiteral.AddRange(new[] {
+				Token.TokenType.VarKeyword,
+				Token.TokenType.Identifier,
+				Token.TokenType.AssignOp,
+				Token.TokenType.StringLiteral,
+				Token.TokenType.Semicolon
+			});
+			var result = stringLiteral.Match(tokens);
+			Console.WriteLine($"# parse result = {result}");
 
 			// test
 			//var test = new PerformanceTest();
